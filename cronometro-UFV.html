@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cronómetro Debate – UFV</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ufv-blue:   #003865;
+      --dark-blue:  #001a33;
+      --white:      #ffffff;
+      --accent:     rgba(255,255,255,0.12);
+      --btn-hover:  #004f8a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Playfair Display', serif;
+      background: var(--dark-blue);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--ufv-blue);
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 3px solid rgba(255,255,255,0.15);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    .logo-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* SVG inline del logo UFV */
+    .ufv-logo-svg {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
+    .ufv-wordmark {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: 2px;
+    }
+
+    .header-divider {
+      width: 2px;
+      height: 44px;
+      background: rgba(255,255,255,0.3);
+      margin: 0 10px;
+    }
+
+    .header-title {
+      font-size: 1rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 24px 40px;
+      gap: 32px;
+    }
+
+    /* ── DISPLAY ── */
+    .clock-card {
+      background: var(--ufv-blue);
+      border-radius: 20px;
+      padding: 36px 56px;
+      text-align: center;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    
+
+    .phase-label {
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 10px;
+      min-height: 1.2em;
+      font-weight: 600;
+    }
+
+    .time-display {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(5rem, 14vw, 9rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 4px;
+      color: var(--white);
+      transition: color 0.2s;
+    }
+
+    .time-display.overtime {
+      color: var(--white);
+    }
+
+    .time-display.blink-red {
+      animation: blinkRed 0.8s step-start infinite;
+    }
+
+    @keyframes blinkRed {
+      0%, 100% { color: #ff3b3b; }
+      50%       { color: #ff9999; }
+    }
+
+    .status-bar {
+      margin-top: 14px;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      min-height: 1.1em;
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .ctrl-btn {
+      padding: 12px 32px;
+      border-radius: 50px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: transparent;
+      color: var(--white);
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .ctrl-btn:hover { background: rgba(255,255,255,0.12); border-color: var(--white); }
+
+    .ctrl-btn.primary {
+      background: var(--white);
+      color: var(--ufv-blue);
+      border-color: var(--white);
+    }
+    .ctrl-btn.primary:hover { background: rgba(255,255,255,0.85); }
+
+    .ctrl-btn.danger {
+      border-color: rgba(255,80,80,0.6);
+      color: #ff8080;
+    }
+    .ctrl-btn.danger:hover { background: rgba(255,60,60,0.15); border-color: #ff5050; }
+
+    /* ── PHASE BUTTONS GRID ── */
+    .phases-section {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .phases-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 14px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .phases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .phase-btn {
+      background: var(--ufv-blue);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 16px 14px;
+      color: var(--white);
+      font-family: 'Playfair Display', serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .phase-btn:hover {
+      background: var(--btn-hover);
+      border-color: rgba(255,255,255,0.45);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    .phase-btn.active {
+      background: var(--white);
+      color: var(--ufv-blue);
+      border-color: var(--white);
+      box-shadow: 0 6px 24px rgba(0,26,51,0.5);
+    }
+
+    .phase-btn .btn-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .phase-btn .btn-time {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      opacity: 0.85;
+    }
+
+    .phase-btn.active .btn-time { opacity: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 540px) {
+      header { padding: 14px 20px; }
+      .clock-card { padding: 28px 24px; }
+      .phases-grid { grid-template-columns: repeat(2, 1fr); }
+      .ufv-wordmark { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrapper">
+    <!-- UFV Logo SVG inline (icon + wordmark) -->
+    <img src="imagenes/logo_UFV1.png" alt="Logo UFV" style="height: 52px; width: auto; background: white; padding: 6px 10px; border-radius: 8px;" />
+    <div class="header-divider"></div>
+    <span class="header-title">XIX TORNEO DE DEBATE ACADEMICO UFV</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Clock display -->
+  <div class="clock-card">
+    <div class="phase-label" id="phaseLabel">Selecciona una fase</div>
+    <div class="time-display" id="timeDisplay">00:00</div>
+    <div class="status-bar" id="statusBar">–</div>
+  </div>
+
+  <!-- Start / Pause / Reset -->
+  <div class="controls">
+    <button class="ctrl-btn primary" id="btnStartPause" onclick="toggleStartPause()">▶ Iniciar</button>
+    <button class="ctrl-btn" onclick="resetTimer()">↺ Reiniciar</button>
+  </div>
+
+  <!-- Phase buttons -->
+  <div class="phases-section">
+    <div class="phases-title">Fases del debate</div>
+    <div class="phases-grid" id="phasesGrid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+</main>
+
+<footer>Universidad Francisco de Vitoria &nbsp;·&nbsp; Cronómetro de Debate &nbsp;·&nbsp; UFV Madrid</footer>
+
+<script>
+  /* ── PHASES ── */
+  const PHASES = [
+    { name: 'Introducción',    seconds: 4 * 60 },
+    { name: 'Refutación 1',   seconds: 5 * 60 },
+    { name: 'Refutación 2',   seconds: 5 * 60 },
+    { name: 'Cruzada 1',      seconds: 90 },
+    { name: 'Cruzada 2',      seconds: 90 },
+    { name: 'Conclusión',     seconds: 3 * 60 },
+    { name: 'Deliberación',   seconds: 20 * 60 },
+    { name: 'Feedback',       seconds: 10 * 60 },
+  ];
+
+  /* ── STATE ── */
+  let currentPhaseIdx = null;
+  let totalSeconds    = 0;   // total original seconds of phase
+  let elapsed         = 0;   // seconds elapsed
+  let running         = false;
+  let interval        = null;
+  let overtime        = false;
+  let overtimeElapsed = 0;
+
+  /* ── DOM ── */
+  const timeDisplay  = document.getElementById('timeDisplay');
+  const phaseLabel   = document.getElementById('phaseLabel');
+  const statusBar    = document.getElementById('statusBar');
+  const btnSP        = document.getElementById('btnStartPause');
+
+  /* ── BUILD PHASE BUTTONS ── */
+  const grid = document.getElementById('phasesGrid');
+  PHASES.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'phase-btn';
+    btn.id = `phase-${i}`;
+    btn.innerHTML = `
+      <span class="btn-name">${p.name}</span>
+      <span class="btn-time">${formatTime(p.seconds)}</span>
+    `;
+    btn.onclick = () => selectPhase(i);
+    grid.appendChild(btn);
+  });
+
+  /* ── HELPERS ── */
+  function formatTime(sec) {
+    const abs = Math.abs(sec);
+    const m = Math.floor(abs / 60);
+    const s = abs % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  function updateDisplay() {
+    if (currentPhaseIdx === null) return;
+    const remaining = totalSeconds - elapsed;
+
+    if (remaining >= 0) {
+      // Normal countdown
+      overtime = false;
+      overtimeElapsed = 0;
+      timeDisplay.textContent = formatTime(remaining);
+      timeDisplay.className = 'time-display';
+      statusBar.textContent = remaining > 0
+        ? `Tiempo restante – ${PHASES[currentPhaseIdx].name}`
+        : '¡Tiempo agotado!';
+    } else {
+      // Overtime: count up in positive, blink red
+      overtime = true;
+      overtimeElapsed = elapsed - totalSeconds;
+      timeDisplay.textContent = '+' + formatTime(overtimeElapsed);
+      timeDisplay.className = 'time-display blink-red';
+      statusBar.textContent = `Tiempo extra – ${PHASES[currentPhaseIdx].name}`;
+    }
+  }
+
+  /* ── PHASE SELECT ── */
+  function selectPhase(idx) {
+    stopTimer();
+    currentPhaseIdx = idx;
+    totalSeconds    = PHASES[idx].seconds;
+    elapsed         = 0;
+    overtime        = false;
+    overtimeElapsed = 0;
+
+    phaseLabel.textContent = PHASES[idx].name;
+    timeDisplay.textContent = formatTime(totalSeconds);
+    timeDisplay.className = 'time-display';
+    statusBar.textContent = 'Listo para iniciar';
+    btnSP.textContent = '▶ Iniciar';
+    btnSP.className = 'ctrl-btn primary';
+
+    // Highlight active button
+    document.querySelectorAll('.phase-btn').forEach((b,i) => {
+      b.classList.toggle('active', i === idx);
+    });
+  }
+
+  /* ── TIMER CONTROLS ── */
+  function toggleStartPause() {
+    if (currentPhaseIdx === null) return;
+    if (running) { pauseTimer(); } else { startTimer(); }
+  }
+
+  function startTimer() {
+    running = true;
+    btnSP.textContent = '⏸ Pausar';
+    btnSP.className = 'ctrl-btn';
+    interval = setInterval(() => {
+      elapsed++;
+      updateDisplay();
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    running = false;
+    clearInterval(interval);
+    btnSP.textContent = '▶ Reanudar';
+    btnSP.className = 'ctrl-btn primary';
+    statusBar.textContent = 'Pausado';
+  }
+
+  function stopTimer() {
+    running = false;
+    clearInterval(interval);
+  }
+
+  function resetTimer() {
+    stopTimer();
+    if (currentPhaseIdx === null) return;
+    elapsed = 0;
+    overtime = false;
+    overtimeElapsed = 0;
+    timeDisplay.textContent = formatTime(totalSeconds);
+    timeDisplay.className = 'time-display';
+    statusBar.textContent = 'Reiniciado – listo para iniciar';
+    btnSP.textContent = '▶ Iniciar';
+    btnSP.className = 'ctrl-btn primary';
+  }
+</script>
+</body>
+</html>
