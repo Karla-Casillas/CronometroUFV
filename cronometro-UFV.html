@@ -370,7 +370,7 @@
       // Overtime: count up in positive, blink red
       overtime = true;
       overtimeElapsed = elapsed - totalSeconds;
-      timeDisplay.textContent = '+' + formatTime(overtimeElapsed);
+      timeDisplay.textContent = formatTime(overtimeElapsed);
       timeDisplay.className = 'time-display blink-red';
       statusBar.textContent = `Tiempo extra – ${PHASES[currentPhaseIdx].name}`;
     }
